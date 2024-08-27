@@ -1,0 +1,16 @@
+###lets create two pod and see that they are communicating with each other
+  ##we will create two pod 
+    56  kubectl run frontend --image=nginx
+   57  kubectl run backend --image=nginx
+   58  kubectl get pod
+  ##expose both the pod 
+   59  kubectl expose pod frontend --port=80
+   60  kubectl expose pod backend --port=80
+   61  kubectl get svc
+  ##this will show that the svc is mapped to your pod you can see the endpoint
+   62  kubectl get pod -o wide
+   63  kubectl describe svc frontend
+   64  kubectl get pod,svc
+   ##if we do curl request they can communicate with each other in the default namespace
+   66  kubectl exec frontend -- curl backend
+   67  kubectl exec backend -- curl frontend
