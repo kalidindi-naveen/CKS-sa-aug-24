@@ -34,3 +34,15 @@ spec:
 ##now fronternd to backe and vice versa will stop working 
    75  kubectl exec backend -- curl frontend
    76  kubectl exec frontend -- curl backend
+##network policy apply to a particular namespace to verify the same we will create another namespace and check the communication of the pod
+ 79  kubectl create ns dev
+   80  kubectl -n dev run cr1 --image-nginx
+   81  kubectl -n dev run cr1 --image=nginx
+   82  kubectl -n dev run cr2 --image=nginx
+   83  kubectl get pod
+   84  kubectl -n dev get pod
+   85  kubectl -n dev  expose pod cr1 --port=80
+   86  kubectl -n dev  expose pod cr2 --port=80
+###in this particular namespace the communication will work
+   87  kubectl -n dev  exec cr1 -- curl cr2
+   88  kubectl -n dev  exec cr2 -- curl cr1
