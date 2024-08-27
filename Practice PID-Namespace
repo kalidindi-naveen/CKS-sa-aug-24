@@ -24,3 +24,25 @@ exit
 ##from outside check the kernal version both are matcvhing
 root@docker:~# uname -a
 Linux docker 5.15.0-1071-azure #80~20.04.1-Ubuntu SMP Wed Aug 14 18:30:12 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
+
+###lets verify the pid and namespace
+root@docker:~# docker run --name c2 -d ubuntu sh -c "sleep 999d"
+54ada3df694dc4914b8b271b9e39d67c04d81a5903788809570f0203ef5c8e67
+root@docker:~# docker ps
+CONTAINER ID   IMAGE     COMMAND                CREATED         STATUS         PORTS     NAMES
+54ada3df694d   ubuntu    "sh -c 'sleep 999d'"   3 seconds ago   Up 2 seconds             c2
+29caf5dd6780   ubuntu    "sh -c 'sleep 1d'"     9 minutes ago   Up 8 minutes             c1
+##this is going to show run the command inside my container and show the process id with whom it is running
+root@docker:~# docker exec c2 ps aux
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.0   2800  1192 ?        Ss   05:13   0:00 sh -c sleep 999d
+root           7  0.0  0.0   2696  1016 ?        S    05:13   0:00 sleep 999d
+root           8 33.3  0.0   7888  4020 ?        Rs   05:14   0:00 ps aux
+###this is an native linux command showing the same process id
+root@docker:~# ps aux | grep sleep
+root        5664  0.0  0.0   2800  1164 ?        Ss   05:04   0:00 sh -c sleep 1d
+root        5686  0.0  0.0   2696  1076 ?        S    05:04   0:00 sleep 1d
+root        6003  0.0  0.0   2800  1192 ?        Ss   05:13   0:00 sh -c sleep 999d
+root        6024  0.0  0.0   2696  1016 ?        S    05:13   0:00 sleep 999d
+root        6057  0.0  0.0   8168   720 pts/0    S+   05:14   0:00 grep --color=auto sleep
+
