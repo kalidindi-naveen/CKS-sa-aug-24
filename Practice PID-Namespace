@@ -1,0 +1,26 @@
+###you need to be a root user
+sudo -i
+###we will create our first container 
+  14  docker run --name c1 -d ubuntu sh -c "sleep 1d"
+   15  docker ps
+####if i login inside the container we can check the kernal name
+docker exec -it c1 bash
+   21  history
+root@docker:~# ^C
+root@docker:~# docker exec -it c1 bash
+root@29caf5dd6780:/# ps aux
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.0   2800  1164 ?        Ss   05:04   0:00 sh -c sleep 1d
+root           7  0.0  0.0   2696  1076 ?        S    05:04   0:00 sleep 1d
+root          22  0.2  0.0   4588  3976 pts/0    Ss   05:07   0:00 bash
+root          30  0.0  0.0   7888  4084 pts/0    R+   05:07   0:00 ps aux
+root@29caf5dd6780:/# uname -r
+5.15.0-1071-azure
+
+#####now outside the contianer i need to verify the ubuntu machine kernal
+first exist the container
+root@29caf5dd6780:/# exit
+exit
+##from outside check the kernal version both are matcvhing
+root@docker:~# uname -a
+Linux docker 5.15.0-1071-azure #80~20.04.1-Ubuntu SMP Wed Aug 14 18:30:12 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
