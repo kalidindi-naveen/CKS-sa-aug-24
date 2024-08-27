@@ -45,4 +45,26 @@ root        5686  0.0  0.0   2696  1076 ?        S    05:04   0:00 sleep 1d
 root        6003  0.0  0.0   2800  1192 ?        Ss   05:13   0:00 sh -c sleep 999d
 root        6024  0.0  0.0   2696  1016 ?        S    05:13   0:00 sleep 999d
 root        6057  0.0  0.0   8168   720 pts/0    S+   05:14   0:00 grep --color=auto sleep
-
+####we will have both the container run with same process id. 
+root@docker:~# ps aux | grep sleep
+root        5664  0.0  0.0   2800  1164 ?        Ss   05:04   0:00 sh -c sleep 1d
+root        5686  0.0  0.0   2696  1076 ?        S    05:04   0:00 sleep 1d
+root        6003  0.0  0.0   2800  1192 ?        Ss   05:13   0:00 sh -c sleep 999d
+root        6024  0.0  0.0   2696  1016 ?        S    05:13   0:00 sleep 999d
+root        6057  0.0  0.0   8168   720 pts/0    S+   05:14   0:00 grep --color=auto sleep
+root@docker:~# docker run --name c2 --pid=container:c1 -d ubuntu sh -c 'sleep 999d'
+475b9a347e8ec18addd41425d2dbcdc1915fef2921fd9ebf1fe7b628dc82a016
+root@docker:~# docker exec c2 ps aux
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.0   2800  1164 ?        Ss   05:04   0:00 sh -c sleep 1d
+root           7  0.0  0.0   2696  1076 ?        S    05:04   0:00 sleep 1d
+root          32  0.1  0.0   2800  1196 ?        Ss   05:24   0:00 sh -c sleep 999d
+root          39  0.0  0.0   2696  1092 ?        S    05:24   0:00 sleep 999d
+root          46 75.0  0.0   7888  3956 ?        Rs   05:24   0:00 ps aux
+root@docker:~# docker exec c1 ps aux
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.0   2800  1164 ?        Ss   05:04   0:00 sh -c sleep 1d
+root           7  0.0  0.0   2696  1076 ?        S    05:04   0:00 sleep 1d
+root          32  0.0  0.0   2800  1196 ?        Ss   05:24   0:00 sh -c sleep 999d
+root          39  0.0  0.0   2696  1092 ?        S    05:24   0:00 sleep 999d
+root          52 50.0  0.0   7888  3984 ?        Rs   05:24   0:00 ps aux
