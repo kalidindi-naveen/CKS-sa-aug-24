@@ -1,0 +1,6 @@
+##create a new namespace
+  @@deploy two pod inside the namespace
+  ##create service in the namespace
+  ##check the service communicate wtih each other
+  ##create a deny policy 
+  ##now check the communication is working on not
