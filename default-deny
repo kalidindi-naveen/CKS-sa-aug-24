@@ -30,6 +30,7 @@ spec:
   - Ingress
   - Egress
 #####save the file and apply it
+kubectl apply -f deny.yml
 74  kubectl describe networkpolicy default-deny
 ##now fronternd to backe and vice versa will stop working 
    75  kubectl exec backend -- curl frontend
