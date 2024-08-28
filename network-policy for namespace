@@ -1,0 +1,32 @@
+root@docker:~# kubectl create ns cassandra
+namespace/cassandra created
+root@docker:~# kubectl edit ns cassandra
+##this will open the cassandra running configuration below uid add this line
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: "2024-08-28T05:09:47Z"
+  labels:
+    kubernetes.io/metadata.name: cassandra
+  name: cassandra
+  resourceVersion: "14112"
+  uid: a8f9a628-0878-49cd-93f6-9339b62c512f
+  labels: ##add this line 
+    ns: cassandra ##add this line
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active
+
+####after adding this we will create a pod in this particular namesapce
+ 144  kubectl -n cassandra run cassandra --image=nginx
+  145  kubectl -n cassandra get pod -o wide
+##put the ip address of the cassandra pod 
+  146  kubectl exec backend -- curl 192.168.1.6
+##the above will not work
+
