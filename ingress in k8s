@@ -13,3 +13,39 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
   193  kubectl expose pod pod2 --port 80 --name service2
   194  kubectl get svc
 ##get svc will show that both the pod is running as clusterip internal to your k8s cluster
+ 197  kubectl get ingressclass
+  198  vi ingresss1.yml
+###check the ingress class and change the name
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx #we need to change the class name
+  rules:
+  - http:
+      paths:
+      - path: /service1
+        pathType: Prefix
+        backend:
+          service:
+            name: service1
+            port:
+              number: 80 #the port number under which your application 
+      - path: /service2
+        pathType: Prefix
+        backend:
+          service:
+            name: service2
+            port:
+              number: 80 #the port number under which your application
+######################################
+ 199  kubectl apply -f ingresss1.yml
+  200  kubectl get ingress
+#3this describe command will show that ingress is pointing to your pod 
+  202  kubectl describe ingress minimal-ingress
+  203  kubectl get pod
+  204  kubectl get pod -o wide
+
