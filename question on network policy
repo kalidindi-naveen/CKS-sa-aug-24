@@ -1,0 +1,42 @@
+One of the nginx based pod called cyan-pod-cka28-trb is running under cyan-ns-cka28-trb namespace and it is exposed within the cluster using cyan-svc-cka28-trb service.
+
+This is a restricted pod so a network policy called cyan-np-cka28-trb has been created in the same namespace to apply some restrictions on this pod.
+
+Two other pods called cyan-white-cka28-trb1 and cyan-black-cka28-trb are also running in the default namespace.
+
+The nginx based app running on the cyan-pod-cka28-trb pod is exposed internally on the default nginx port (80).
+
+Expectation: This app should only be accessible from the cyan-white-cka28-trb1 pod.
+
+Problem: This app is not accessible from anywhere.
+
+Troubleshoot this issue and fix the connectivity as per the requirement listed above.
+
+Note: You can exec into cyan-white-cka28-trb and cyan-black-cka28-trb pods and test connectivity using the curl utility.
+
+You may update the network policy, but make sure it is not deleted from the cyan-ns-cka28-trb namespace.
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  creationTimestamp: "2023-08-27T11:47:23Z"
+  generation: 3
+  name: cyan-np-cka28-trb
+  namespace: cyan-ns-cka28-trb
+  resourceVersion: "11275"
+  uid: da47e1c8-42db-4a67-860c-8e0174f4dc3f
+spec:
+  egress:
+  - ports:
+      port: 80
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: default
+      podSelector:
+        matchLabels:
