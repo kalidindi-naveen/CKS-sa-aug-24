@@ -88,3 +88,8 @@ frontend   1/1     Running   1 (54m ago)   21h   192.168.1.2   worker   <none>  
 root@docker:~# kubectl exec frontend -- curl 192.168.1.3
 <!DOCTYPE html>
 
+##delete all the network policy
+ 155  kubectl get networkpolicy
+  156  kubectl delete networkpolicy default-deny
+  157  kubectl delete networkpolicy backend
+  158  kubectl delete networkpolicy frontend
