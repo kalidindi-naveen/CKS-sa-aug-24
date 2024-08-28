@@ -29,4 +29,35 @@ status:
 ##put the ip address of the cassandra pod 
   146  kubectl exec backend -- curl 192.168.1.6
 ##the above will not work
+##edit the backend policy
+vi backend
+####################################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      run: backend
+  policyTypes:
 
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+
+
+    - podSelector:
+        matchLabels:
+          run: frontend
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          ns: cassandra
+
+####now verify the communication is working or not
+
+146  kubectl exec backend -- curl 192.168.1.6
