@@ -5,3 +5,11 @@ kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/con
 ##lets create a new ingress with new version
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.6.4/deploy/static/provider/cloud/deploy.yaml
   163  kubectl -n ingress-nginx get pod,svc
+##now we will create two pod and expose them using clusterip
+189  kubectl run pod1 --image=nginx
+
+  191  kubectl run pod2 --image=httpd
+  192  kubectl expose pod pod1 --port 80 --name service1
+  193  kubectl expose pod pod2 --port 80 --name service2
+  194  kubectl get svc
+##get svc will show that both the pod is running as clusterip internal to your k8s cluster
