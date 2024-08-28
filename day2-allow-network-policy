@@ -60,6 +60,30 @@ spec:
 root@docker:~# kubectl get pod --show-labels -o wide
 NAME       READY   STATUS    RESTARTS      AGE   IP            NODE     NOMINATED NODE   READINESS GATES   LABELS
 backend    1/1     Running   1 (54m ago)   21h   192.168.1.3   worker   <none>           <none>            run=backend
+#######################
+vi deny.yml
+#####here we will enable port 53 dns port for resulution
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: default #all this policy will be specific to a namespace
+spec:
+  podSelector:
+    matchLabels: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  egress:
+  -  to: 
+     ports:
+       - port: 53
+         protocol: TCP 
+       - port: 53 
+         protocol: UDP
+      ###########################
+133  kubectl apply -f deny.yml
+  134  kubectl exec frontend -- curl backend
 frontend   1/1     Running   1 (54m ago)   21h   192.168.1.2   worker   <none>           <none>            run=frontend
 root@docker:~# kubectl exec frontend -- curl 192.168.1.3
 <!DOCTYPE html>
