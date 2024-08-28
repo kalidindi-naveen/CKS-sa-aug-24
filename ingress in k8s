@@ -73,4 +73,55 @@ Locality Name (eg, city) []:
 Organization Name (eg, company) [Internet Widgits Pty Ltd]:
 Organizational Unit Name (eg, section) []:
 Common Name (e.g. server FQDN or YOUR name) []:secure-ingress.com 
+##lets import the cert and key you need to import
+  224  kubectl create secret tls -h
+  225  kubectl create secret tls secure-ingress --cert=cert.pem --key=key.pem
+  226  kubectl get ing,secret
+###once imported
+vi ingress1.yml
+###############################
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+###add the tls block from the kubernetes document and chang ethe host and secret name which created earlier
+  tls:
+  - hosts:
+      - secure-ingress.com
+    secretName: secure-ingress
+  ingressClassName: nginx #we need to change the class name
 
+  rules:
+  - host: secure-ingress.com
+    http:
+      paths:
+      - path: /service1
+        pathType: Prefix
+        backend:
+          service:
+            name: service1
+            port:
+              number: 80 #the port number under which your application
+      - path: /service2
+        pathType: Prefix
+        backend:
+          service:
+            name: service2
+            port:
+              number: 80 #the port number under which your application
+###apply this file
+root@docker:~# kubectl apply -f ingresss1.yml
+ingress.networking.k8s.io/minimal-ingress configured
+##################################################
+##this will not work
+ 233  curl https://20.15.201.98:31287 -kv
+##now also you will see the fake certificate
+
+  235  vi /etc/hosts
+##inside etc host add this entry change the ip to your machine
+20.15.201.98 secure-ingress.com
+###finally if we do curl
+  236  curl https://secure-ingress.com:31287 -kv
