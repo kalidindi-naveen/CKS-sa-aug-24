@@ -55,3 +55,12 @@ spec:
   120  kubectl apply -f backend.yml
   121  kubectl get networkpolicy
  113  kubectl exec frontend -- curl backend
+
+###through the ip address it will work put the ip of the backend pod
+root@docker:~# kubectl get pod --show-labels -o wide
+NAME       READY   STATUS    RESTARTS      AGE   IP            NODE     NOMINATED NODE   READINESS GATES   LABELS
+backend    1/1     Running   1 (54m ago)   21h   192.168.1.3   worker   <none>           <none>            run=backend
+frontend   1/1     Running   1 (54m ago)   21h   192.168.1.2   worker   <none>           <none>            run=frontend
+root@docker:~# kubectl exec frontend -- curl 192.168.1.3
+<!DOCTYPE html>
+
