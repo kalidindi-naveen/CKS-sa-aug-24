@@ -1,0 +1,30 @@
+##we will first create an egress routing so that frontend can initiate connection to backend
+   109  vi frontend.yml
+#####################################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      run: frontend
+  policyTypes:
+
+  - Egress
+  egress:
+  - to:
+
+
+    - podSelector:
+        matchLabels:
+          run: backend
+#########################################
+ 110  kubectl apply -f frontend.yml
+  111  kubectl get networkpolicy
+  112  kubectl describe networkpolicy frontend
+            ###now also the communciation will not work becuase we have created egress routing from frontend to backend
+            #3next we will create an incoming routing from backend to frontend
+  113  kubectl exec frontend -- curl backend
+
