@@ -48,4 +48,9 @@ spec:
   202  kubectl describe ingress minimal-ingress
   203  kubectl get pod
   204  kubectl get pod -o wide
+##ingress tls certificate check
+211  kubectl get svc -A
+##this will show the poort number for ssl i.e 443
+##change teh ip to your worker node 
+ 217  curl https://20.15.201.98:31287 -kv
 
