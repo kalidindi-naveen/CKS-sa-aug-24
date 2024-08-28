@@ -27,4 +27,31 @@ spec:
             ###now also the communciation will not work becuase we have created egress routing from frontend to backend
             #3next we will create an incoming routing from backend to frontend
   113  kubectl exec frontend -- curl backend
+##lets created the backend incoming routing from frontend
+ 118  kubectl get pod --show-labels -o wide
 
+  119  vi backend.yml
+##################################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      run: backend
+  policyTypes:
+  
+  - Ingress 
+  ingress:
+  - from:
+    
+    
+    - podSelector:
+        matchLabels:
+          run: frontend
+   ######applyit then check 
+  120  kubectl apply -f backend.yml
+  121  kubectl get networkpolicy
+ 113  kubectl exec frontend -- curl backend
