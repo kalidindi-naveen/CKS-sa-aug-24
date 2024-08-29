@@ -1,0 +1,30 @@
+####create a cluster role whcih allow to delete dpeloyment]
+    328  kubectl create clusterrole -h
+  329  kubectl create clusterrole deploy-deleter --verb delete --resource deployments
+##apply this cluster role to user jane
+  root@docker:~# kubectl create clusterrolebinding deploy-deleter --user jane --clusterrole deploy-deleter
+clusterrolebinding.rbac.authorization.k8s.io/deploy-deleter created
+###i have a cluster role which us used to delete the deployment 
+    ##i need to apply that cluster role to a particular name space and a user
+    this will allow jim on a particular namesapce to a delete dpeloyment
+    root@docker:~# kubectl -n red create rolebinding deploy-deleter --user jim --clusterrole deploy-deleter
+rolebinding.rbac.authorization.k8s.io/deploy-deleter created
+##lets test it 
+      ##this will apply to default namesapce
+      336  kubectl auth can-i delete deployments --as jane
+      ##this will apply to all namespace
+  337  kubectl auth can-i delete deployments --as jane -A
+
+  340  kubectl auth can-i delete deployments --as jane -n default
+  341  kubectl auth can-i delete deployments --as jane -n red
+      ##checking that jane can deploy pod in red namesapce no
+  342  kubectl auth can-i delete pod --as jane -n red
+  343  kubectl auth can-i delete pod --as jane -A
+
+      ######lets check jim policy
+      root@docker:~# kubectl auth can-i delete deployments --as jim
+no
+root@docker:~# kubectl auth can-i delete deployments --as jim -A
+no
+root@docker:~# kubectl auth can-i delete deployments --as jim -n red
+yes
