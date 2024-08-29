@@ -10,3 +10,28 @@ apt install jq
 ###now if i run the same curl command
 curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?api-version=2021-02-01" | jq
 ###from inside the pod we can see the metadata of our whole instance
+##lets create a networkpolicy which will disable all the metadata access from a pod
+#####lets create a policy which will disable metadata access in a particular namespace
+261  vi cloud-metadata-deny.yml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cloud-metadata-deny
+  namespace: default
+spec:
+  podSelector: {}
+
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - 169.254.169.254/32
+  262  kubectl apply -f cloud-metadata-deny.yml
+  263  kubectl get networkpolicy
+  264  kubectl describe networkpolicy cloud-metadata-deny
+  265  kubectl get pod
+  266  kubectl exec -it pod1 bash
+####next we will create an exeption where we define that a pod with particular namespace will allow access to metadata
