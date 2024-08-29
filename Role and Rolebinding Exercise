@@ -1,0 +1,14 @@
+##we will first create two namespace
+  296  kubectl create ns red
+  299  kubectl create ns blue
+kubectl get ns
+###you will see two namespace
+302  kubectl -n red create role -h
+
+  304  kubectl -n red create role secret-manager --verb=get --resource=secrets -o yaml --dry-run=client
+###the above command will give the skeleton for role
+  305  kubectl -n red create role secret-manager --verb=get --resource=secrets
+  306  kubectl -n red create rolebinding -h
+##this will bind the role
+  307  kubectl -n red create rolebinding secret-manager --role=secret-manager --user=jane
+
