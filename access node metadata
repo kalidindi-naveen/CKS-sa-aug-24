@@ -34,4 +34,6 @@ spec:
   264  kubectl describe networkpolicy cloud-metadata-deny
   265  kubectl get pod
   266  kubectl exec -it pod1 bash
+##check using the curl command
+curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?api-version=2021-02-01" | jq
 ####next we will create an exeption where we define that a pod with particular namespace will allow access to metadata
