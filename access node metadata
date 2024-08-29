@@ -37,3 +37,35 @@ spec:
 ##check using the curl command
 curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?api-version=2021-02-01" | jq
 ####next we will create an exeption where we define that a pod with particular namespace will allow access to metadata
+vi cloud-metadata-allow.yml
+####add this policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cloud-metadata-allow
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      role: metadata-accessor #the pod should have this label
+  
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 169.254.169.254/32 #and inside the policy we need to allow this ip address
+####################################################
+ 271  kubectl apply -f cloud-metadata-allow.yml
+  272  kubectl get networkpolicy
+288  kubectl run nginx --image=nginx
+  289  kubectl label pod nginx role=metadata-accessor
+###this will show two labels or the exeption label
+  290  kubectl get pod nginx --show-labels
+  291  kubectl exec -it nginx bash
+###once you login run this command
+curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?api-version=2021-02-01" 
+##this will give you the output due to exception or allow policy
+exit
+
+        
