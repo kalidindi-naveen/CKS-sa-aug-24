@@ -11,4 +11,24 @@ kubectl get ns
   306  kubectl -n red create rolebinding -h
 ##this will bind the role
   307  kubectl -n red create rolebinding secret-manager --role=secret-manager --user=jane
+##user jane can get and list secret in namespace blue
+#in the blue namespace we will give secret get and list access 
+root@docker:~# # kubectl -n blue create role secret-manager --verb=get  --verb=list --resource=secrets -o yaml --dry-run=client
+root@docker:~# kubectl -n blue create role secret-manager --verb=get  --verb=list --resource=secrets
+role.rbac.authorization.k8s.io/secret-manager created
+####we added the jane user in blue namespace
+root@docker:~# kubectl -n blue create rolebinding secret-manager --role=secret-manager --user=jane
+rolebinding.rbac.authorization.k8s.io/secret-manager created
 
+###to verfiy the permission
+ 316  kubectl auth can-i -h
+
+  318  kubectl -n red auth can-i get secrets --as jane
+##list we cannot do it as we didint give the verb in red namespace
+  319  kubectl -n red auth can-i list secrets --as jane
+  320  kubectl -n red auth can-i list pod --as jane
+  321  kubectl -n red auth can-i list deployment --as jane
+##in the blue namespace list secret and get secret permission given delete secret will not work
+  323  kubectl -n blue auth can-i list secrets --as jane
+  324  kubectl -n blue auth can-i get secrets --as jane
+  325  kubectl -n blue auth can-i delete secrets --as jane
