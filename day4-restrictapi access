@@ -9,3 +9,62 @@
   "reason": "Forbidden",
   "details": {},
   "code": 403
+##using localhost also we can see the anonymous access
+root@docker:/etc/kubernetes/manifests# curl https://localhost:6443 -k
+{
+  "kind": "Status",
+  "apiVersion": "v1",
+  "metadata": {},
+  "status": "Failure",
+  "message": "forbidden: User \"system:anonymous\" cannot get path \"/\"",
+  "reason": "Forbidden",
+  "details": {},
+  "code": 403
+'###lets disable it
+##in the master maching we have the master node manifest file 
+cd /etc/kubernetes/manifests
+######
+##open the kubeapi server
+vi kube-apiserver.yaml
+####below specification container add the any line 
+
+
+spec:
+  containers:
+  - command:
+
+    - kube-apiserver
+    - --anonymous-auth=false ###add this line 
+##save the file
+root@docker:/etc/kubernetes/manifests# kubectl -n kube-system get pod | grep api
+kube-apiserver-docker                      0/1     Running   0               26s
+####check the anonymous curl request it will show that it is unauthorized
+root@docker:/etc/kubernetes/manifests# curl https://localhost:6443 -k
+{
+  "kind": "Status",
+  "apiVersion": "v1",
+  "metadata": {},
+  "status": "Failure",
+  "message": "Unauthorized",
+  "reason": "Unauthorized",
+  "code": 401
+###finally lets disable the service which will show container 1/1 ready
+
+##lets make anonumus as yes
+vi kube-apiserver.yaml
+####below specification container add the any line 
+
+
+spec:
+  containers:
+  - command:
+
+    - kube-apiserver
+    - --anonymous-auth=true ###add this line 
+##after this k8s will panic you need to wait for few minutes before the pod comes up
+root@docker:/etc/kubernetes/manifests# kubectl -n kube-system get pod | grep api
+The connection to the server 10.1.0.4:6443 was refused - did you specify the right host or port?
+root@docker:/etc/kubernetes/manifests# kubectl -n kube-system get pod | grep api
+kube-apiserver-docker                      0/1     Pending   0               5s
+
+
