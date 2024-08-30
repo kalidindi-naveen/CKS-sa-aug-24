@@ -69,3 +69,5 @@ echo key | base64 -d > jane.crt
 root@docker:~# kubectl config set-credentials jane --client-certificate=jane.crt --client-key=jane.key
 User "jane" set.
 ###once we add jane user to the configuration
+ kubectl config view
+##this will show that jane is imported in the kubernetes api
