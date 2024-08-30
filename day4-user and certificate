@@ -71,3 +71,20 @@ User "jane" set.
 ###once we add jane user to the configuration
  kubectl config view
 ##this will show that jane is imported in the kubernetes api
+##next we need to work as jane user
+394  kubectl config set-context jane --user=jane --cluster=kubernetes
+##this will show jane can be user as user
+  395  kubectl config get-contexts
+##move to jane user
+  398  kubectl config use-context jane
+##this will point to jane user
+  399  kubectl config get-contexts
+##jane do not have access to namesapce
+  400  kubectl get ns
+##jane has access to secrets in blue namespace
+  401  kubectl -n blue get secretes
+##checking jane can delete all the deployment in all the namespace as we have cluster role and clusterolebinding
+  402  kubectl auth can-i delete deployment -A
+###switch back to the admin
+  403  kubectl config use-context kubernetes-admin@kubernetes
+ 399  kubectl config get-contexts
