@@ -69,4 +69,47 @@ kube-apiserver-docker                      0/1     Pending   0               5s
 
 ###add insecure port inside your kube-api server
 - --insecure-port=8080
+##how to make your api server accessable using nodeport
+root@docker:/etc/kubernetes/manifests# kubectl get svc
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+backend      ClusterIP   10.98.188.94     <none>        80/TCP    3d
+frontend     ClusterIP   10.111.214.233   <none>        80/TCP    3d
+kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP   3d1h
+########change the type from cluster ip to nodeport
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2024-08-27T06:36:42Z"
+  labels:
+    component: apiserver
+    provider: kubernetes
+  name: kubernetes
+  namespace: default
+  resourceVersion: "86189"
+  uid: 74207b5c-a526-4aaf-9286-dd5df9d1e250
+spec:
+  clusterIP: 10.96.0.1
+  clusterIPs:
+  - 10.96.0.1
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: https
+    nodePort: 30140
+    port: 443
+    protocol: TCP
+    targetPort: 6443
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
+####do a curl request put the node machine ip address
+curl https://20.15.201.98:30140 -k
 
