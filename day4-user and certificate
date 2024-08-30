@@ -50,4 +50,6 @@ spec:
 ##kubectl apply -f csr.yml
 kubectl get csr
 ##you will see that csr is being imported 
+##to verify the certificate has been imported or not 
+ kubectl edit csr jane
 
