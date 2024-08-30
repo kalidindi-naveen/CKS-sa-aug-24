@@ -67,4 +67,6 @@ The connection to the server 10.1.0.4:6443 was refused - did you specify the rig
 root@docker:/etc/kubernetes/manifests# kubectl -n kube-system get pod | grep api
 kube-apiserver-docker                      0/1     Pending   0               5s
 
+###add insecure port inside your kube-api server
+- --insecure-port=8080
 
