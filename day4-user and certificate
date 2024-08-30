@@ -26,3 +26,28 @@ Email Address []:
 ##########################################################
   if you do ls
   $$$you will see jane.csr and jane.key
+#########################do not open the csr certificate in plain text format use base64 encoded format so that it will not be currupted
+361  cat jane.csr |  base64
+##this below command -w 0 will remove all the line breaks
+  362  cat jane.csr |  base64 -w 0
+########lets create a csr file and import or csr key
+https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/
+###
+from the documetnation
+###################################################### #replace the to do with your base 64 encoded key
+vi csr.yml
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: jane
+spec:
+  
+  
+  request: todo 
+  signerName: kubernetes.io/kube-apiserver-client
+  usages:
+  - client auth
+##kubectl apply -f csr.yml
+kubectl get csr
+##you will see that csr is being imported 
+
