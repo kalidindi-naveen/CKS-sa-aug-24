@@ -88,3 +88,15 @@ User "jane" set.
 ###switch back to the admin
   403  kubectl config use-context kubernetes-admin@kubernetes
  399  kubectl config get-contexts
+###lets create a secret using admin user 
+403  kubectl config use-context kubernetes-admin@kubernetes
+ 427  kubectl -n blue create secret generic my-secret --from-literal=key1=supersecret
+  428  kubectl get secret -n blue
+##swiotch to jane user 
+ 430  kubectl config use-context jane
+  431  kubectl -n blue get secrets
+ ##this will not work as we have given only get and list access to user jane 
+  433  kubectl -n blue delete secrets my-secret
+##switch back to admin user
+  434  411  kubectl config use-context kubernetes-admin@kubernetes
+
