@@ -1,0 +1,11 @@
+##we can do anynomus access to the API server
+  root@docker:~# curl https://20.29.34.38:6443 -k
+{
+  "kind": "Status",
+  "apiVersion": "v1",
+  "metadata": {},
+  "status": "Failure",
+  "message": "forbidden: User \"system:anonymous\" cannot get path \"/\"",
+  "reason": "Forbidden",
+  "details": {},
+  "code": 403
