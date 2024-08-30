@@ -49,6 +49,12 @@ spec:
   - client auth
 ##kubectl apply -f csr.yml
 kubectl get csr
+#lets approve the certificate 
+374  kubectl certificate approve jane
+  375  kubectl get csr
+###the last command will show that jane certificate is being approved
+  376  kubectl get csr jane -o yaml
+
 ##you will see that csr is being imported 
 ##to verify the certificate has been imported or not 
  kubectl edit csr jane
