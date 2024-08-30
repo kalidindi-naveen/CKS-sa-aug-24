@@ -1,0 +1,28 @@
+##first we will create an csr certificate. 
+  sudo -i
+  rm *.pem
+  #############################lets create an csr certificate for user jane
+root@docker:~# openssl genrsa -out jane.key 2048
+Generating RSA private key, 2048 bit long modulus (2 primes)
+.......................+++++
+.........+++++
+e is 65537 (0x010001)
+  ##convert this key into an csr certificate
+root@docker:~# openssl req -new -key jane.key -out jane.csr
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:
+State or Province Name (full name) [Some-State]:
+Locality Name (eg, city) []:
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:
+Organizational Unit Name (eg, section) []:
+Common Name (e.g. server FQDN or YOUR name) []:jane ###in the common name do not forget to put the name of the user to whom you are creating the certificate
+Email Address []:
+##########################################################
+  if you do ls
+  $$$you will see jane.csr and jane.key
