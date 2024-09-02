@@ -61,9 +61,10 @@ spec:
       type: DirectoryOrCreate
     name: k8s-certs
 ###copy the above mentioend block paste in the c
-  - mountPath: /etc/kubernetes/etcd
-      name: etcd
-      readOnly: true
+  - hostPath:
+      path: /etc/kubernetes/etcd
+      type: DirectoryOrCreate
+    name: etcd
 
 ######################################################
 ##then go to volume mount in contianer defination
