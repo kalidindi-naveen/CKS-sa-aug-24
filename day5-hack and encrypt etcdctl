@@ -18,3 +18,259 @@ root@cks-master:~# ETCDCTL_API=3 etcdctl --cert=/etc/kubernetes/pki/apiserver-et
  62  ETCDCTL_API=3 etcdctl --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/secret2
    63  ETCDCTL_API=3 etcdctl --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/secret1
 #####################you can see the secret in plan text format
+as we know that secret is always mountable
+#######################################
+  67  cd /etc/kubernetes/etcd
+   68  cat ec.yml
+   69  cd /etc/kubernetes/
+   70  ls
+   71  mkdir etcd
+   72  cd etcd/
+##########################inside this directory we will provide the secret file 
+#lets create  a base64 encoded 
+root@cks-master:/etc/kubernetes/etcd# echo password | base64
+cGFzc3dvcmQK
+##############################
+vi ec.yml
+###########################################
+apiVersion: apiserver.config.k8s.io/v1
+kind: EncryptionConfiguration
+resources:
+  - resources:
+      - secrets
+    providers:
+      - aescbc:
+          keys:
+            - name: key1
+              secret: c2VjcmV0IGlzIHNlY3VyZQ==
+      - identity: {} #so that my existing secret will not be encrypted
+    
+###in the documentation to select this secret inside kube-api manifest file i need to add the path of this encryption standard
+vi /etc/kubernetes/manifests/kube-apiserver.yaml
+########################################
+inside this add the line below
+#################################################
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    - --encryption-provider-config=/etc/kubernetes/etcd/ec.yml
+###now go below add the volumes in the host path
+  - hostPath:
+      path: /etc/kubernetes/pki
+      type: DirectoryOrCreate
+    name: k8s-certs
+###copy the above mentioend block paste in the c
+  - mountPath: /etc/kubernetes/etcd
+      name: etcd
+      readOnly: true
+
+######################################################
+##then go to volume mount in contianer defination
+
+  - mountPath: /etc/kubernetes/pki
+      name: k8s-certs
+      readOnly: true
+##copy the above and paste it below
+    - mountPath: /etc/kubernetes/etcd
+      name: etcd
+      readOnly: true
+##################################
+###after this check the logs of your api container
+crictl ps
+######
+if the container is not coming 
+#################check the pod logs
+ 9  cd /var/log/pods/
+   10  ls
+   11  cd kube-system_kube-apiserver-cks-master_801daa748a9b3620df5f68c4b3153a91/
+cd kubernetes-api
+tail -f 0.log
+###################################
+##to restart k8s server
+182  mv kube-apiserver.yaml ..
+192  mv kube-apiserver.yaml /etc/kubernetes/manifests/
+####
+finally we need to see the encyrption is done or note
+####################################################
+##because of the idntity block older secret will not be encrypted
+ 207  ETCDCTL_API=3 etcdctl --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/secret2
+#########lets create a new secret 
+208  kubectl create secret generic very-secure --from-literal cc=1234
+##check that it is visauliozed or not
+  210  ETCDCTL_API=3 etcdctl --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/very-secure
+#####
+kube-apiser.yml
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubeadm.kubernetes.io/kube-apiserver.advertise-address.endpoint: 10.0.0.5:6443
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    - --encryption-provider-config=/etc/kubernetes/etcd/ec.yaml
+    - --advertise-address=10.0.0.5
+    - --allow-privileged=true
+    - --authorization-mode=Node,RBAC
+    - --client-ca-file=/etc/kubernetes/pki/ca.crt
+    - --enable-admission-plugins=NodeRestriction
+    - --enable-bootstrap-token-auth=true
+    - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
+    - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
+    - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
+    - --etcd-servers=https://127.0.0.1:2379
+    - --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt
+    - --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key
+    - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+    - --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt
+    - --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key
+    - --requestheader-allowed-names=front-proxy-client
+    - --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt
+    - --requestheader-extra-headers-prefix=X-Remote-Extra-
+    - --requestheader-group-headers=X-Remote-Group
+    - --requestheader-username-headers=X-Remote-User
+    - --secure-port=6443
+    - --service-account-issuer=https://kubernetes.default.svc.cluster.local
+    - --service-account-key-file=/etc/kubernetes/pki/sa.pub
+    - --service-account-signing-key-file=/etc/kubernetes/pki/sa.key
+    - --service-cluster-ip-range=10.96.0.0/12
+    - --tls-cert-file=/etc/kubernetes/pki/apiserver.crt
+    - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+    image: registry.k8s.io/kube-apiserver:v1.30.3
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 8
+      httpGet:
+        host: 10.0.0.5
+        path: /livez
+        port: 6443
+        scheme: HTTPS
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 15
+    name: kube-apiserver
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        host: 10.0.0.5
+        path: /readyz
+        port: 6443
+        scheme: HTTPS
+      periodSeconds: 1
+      timeoutSeconds: 15
+    resources:
+      requests:
+        cpu: 250m
+    startupProbe:
+      failureThreshold: 24
+      httpGet:
+        host: 10.0.0.5
+        path: /livez
+        port: 6443
+        scheme: HTTPS
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 15
+    volumeMounts:
+    - mountPath: /etc/ssl/certs
+      name: ca-certs
+      readOnly: true
+    - mountPath: /etc/ca-certificates
+      name: etc-ca-certificates
+      readOnly: true
+    - mountPath: /etc/pki
+      name: etc-pki
+      readOnly: true
+    - mountPath: /etc/kubernetes/pki
+      name: k8s-certs
+      readOnly: true
+    - mountPath: /etc/kubernetes/etcd
+      name: etcd
+      readOnly: true
+    - mountPath: /usr/local/share/ca-certificates
+      name: usr-local-share-ca-certificates
+      readOnly: true
+    - mountPath: /usr/share/ca-certificates
+      name: usr-share-ca-certificates
+      readOnly: true
+  hostNetwork: true
+  priority: 2000001000
+  priorityClassName: system-node-critical
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  volumes:
+  - hostPath:
+      path: /etc/ssl/certs
+      type: DirectoryOrCreate
+    name: ca-certs
+  - hostPath:
+      path: /etc/ca-certificates
+      type: DirectoryOrCreate
+    name: etc-ca-certificates
+  - hostPath:
+      path: /etc/pki
+      type: DirectoryOrCreate
+    name: etc-pki
+  - hostPath:
+      path: /etc/kubernetes/pki
+      type: DirectoryOrCreate
+    name: k8s-certs
+  - hostPath:
+      path: /etc/kubernetes/etcd
+      type: DirectoryOrCreate
+    name: etcd
+  - hostPath:
+      path: /usr/local/share/ca-certificates
+      type: DirectoryOrCreate
+    name: usr-local-share-ca-certificates
+  - hostPath:
+      path: /usr/share/ca-certificates
+      type: DirectoryOrCreate
+    name: usr-share-ca-certificates
+status: {}
+###all the troubleshooting command
+  178  ls
+  179  vi ec.yaml
+  180  cd ..
+  181  cd  manifests/
+  182  mv kube-apiserver.yaml ..
+  183  crictl ps
+  184  cd ..
+  185  cd etcd/
+  186  vi ec.yaml
+  187  cd ..
+  188  cd manifests/
+  189  mv kube-apiserver.yaml ..
+  190  cd ..
+  191  ls
+  192  mv kube-apiserver.yaml /etc/kubernetes/manifests/
+  193  cd manifests/
+  194  ls
+  195  crictl ps
+  196  kubectl get ps
+  197  kubectl get nodes
+  198  cd ..
+  199  cd etcd/
+  200  ls
+  201  cat ec.yaml
+  202  cd ..
+  203  cd manifests/
+  204  ls
+  205  vi kube-apiserver.yaml
+  206  history
+  207  ETCDCTL_API=3 etcdctl --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/secret2
+  208  kubectl create secret generic very-secure --from-literal cc=1234
+  209  ETCDCTL_API=3 etcdctl --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/cc
+  210  ETCDCTL_API=3 etcdctl --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/very-secure
+  211  history
+  212  cat kube-apiserver.yaml
+
