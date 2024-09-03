@@ -47,4 +47,7 @@ spec:
     message: "access denied hola many"]
 ##finally we need to verify the opa applied or not
   359  kubectl apply -f k8salwaysdeny.yml
-#####
+#####try to create a pod and check the logs
+383  kubectl run pod --image=nginx
+  384  kubectl describe K8sAlwaysDeny pod-always-deny
+
