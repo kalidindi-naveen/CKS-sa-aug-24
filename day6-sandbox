@@ -92,3 +92,7 @@ root@cks-master:~# kubectl exec -it gvisor -- sh
 [    3.091367] Ready!
 
 ####exit the pod
+###how to check the kubernetes
+root@cks-master:~# docker info | grep -i runtime
+ Runtimes: io.containerd.runc.v2 runc
+ Default Runtime: runc
