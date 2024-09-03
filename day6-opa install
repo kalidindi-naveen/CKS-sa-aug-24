@@ -18,7 +18,7 @@ spec:
         # Schema for the `parameters` field
         openAPIV3Schema:
           properties:
-            labels:
+            message:
               type: string
   targets:
     - target: admission.k8s.gatekeeper.sh
@@ -44,8 +44,7 @@ spec:
       - apiGroups: [""]
         kinds: ["Pod"]
   parameters:
-    message: ["access denied hola many"]
-
+    message: "access denied hola many"]
 ##finally we need to verify the opa applied or not
   359  kubectl apply -f k8salwaysdeny.yml
 #####
