@@ -12,3 +12,43 @@
   262  uname -r
   ##strace command will show that kernal is talking to your hardware
   263  strace uname -r
+##look for docuymentation in k8s to use runtimeclass
+root@cks-master:~# vi run.yml
+# RuntimeClass is defined in the node.k8s.io API group
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: gvisor ##add the name of the runtime class
+handler: runsc ###
+
+root@cks-master:~# kubectl apply -f run.yml
+runtimeclass.node.k8s.io/gvisor created
+root@cks-master:~# kubectl get runtimeclass
+NAME     HANDLER   AGE
+gvisor   runsc     11s
+####lets create a pod with gvisor as runtime class
+ 271  kubectl run gvisor --image=nginx -o yaml --dry-run=client > gvisor.yml
+  272  vi gvisor.yml
+#########
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: gvisor
+  name: gvisor
+spec:
+  runtimeClassName: gvisor #we added the runtime class
+  containers:
+  - image: nginx
+    name: gvisor
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+  273  kubectl apply -f gvisor.yml
+###pod will not be created as it cannot find the runtime environment
+  274  kubectl get pod
+  275  kubectl get pod -o wide
+  276  kubectl describe pod gvisor
