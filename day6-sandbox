@@ -48,7 +48,47 @@ spec:
 status: {}
 
   273  kubectl apply -f gvisor.yml
+###do this installation in the node where you want gvisor as a sanbox
+bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/microservice-vulnerabilities/container-runtimes/gvisor/install_gvisor.sh)
+##if you want to add some more sandbox 
+# Example of Pod+RuntimeClass:
+https://github.com/killer-sh/cks-course-environment/blob/master/course-content/microservice-vulnerabilities/container-runtimes/gvisor/example.yaml
+
 ###pod will not be created as it cannot find the runtime environment
   274  kubectl get pod
   275  kubectl get pod -o wide
   276  kubectl describe pod gvisor
+
+###do this installation in the node where you want gvisor as a sanbox
+bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/microservice-vulnerabilities/container-runtimes/gvisor/install_gvisor.sh)
+##if you want to add some more sandbox 
+# Example of Pod+RuntimeClass:
+https://github.com/killer-sh/cks-course-environment/blob/master/course-content/microservice-vulnerabilities/container-runtimes/gvisor/example.yaml
+root@cks-master:~# kubectl get pod
+NAME     READY   STATUS    RESTARTS   AGE
+gvisor   1/1     Running   0          15m
+pod      1/1     Running   0          45m
+root@cks-master:~# kubectl exec -it gvisor -- sh
+# uname -r
+4.4.0
+# exit
+root@cks-master:~# kubectl get nodes -o wide
+NAME         STATUS   ROLES           AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
+cks-master   Ready    control-plane   40h   v1.30.3   10.0.0.5      <none>        Ubuntu 20.04.6 LTS   5.15.0-1071-azure   containerd://1.6.12
+cks-worker   Ready    <none>          40h   v1.30.3   10.0.0.4      <none>        Ubuntu 20.04.6 LTS   5.15.0-1071-azure   containerd://1.6.12
+root@cks-master:~# kubectl exec -it gvisor -- sh
+# dmesg
+[    0.000000] Starting gVisor...
+[    0.356824] Creating process schedule...
+[    0.541989] Creating bureaucratic processes...
+[    1.023753] Feeding the init monster...
+[    1.343555] Conjuring /dev/null black hole...
+[    1.469828] Generating random numbers by fair dice roll...
+[    1.806790] Constructing home...
+[    2.172532] Singleplexing /dev/ptmx...
+[    2.361657] Searching for socket adapter...
+[    2.569016] Forking spaghetti code...
+[    2.755507] Rewriting operating system in Javascript...
+[    3.091367] Ready!
+
+####exit the pod
