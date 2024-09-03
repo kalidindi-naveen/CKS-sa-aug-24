@@ -34,3 +34,51 @@ uid=0(root) gid=0(root) groups=10(wheel)
 / # ls test
 test
 / # exit
+##we will modofy the pod defination
+vi pod.yml
+#####
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+######################################
+root@cks-master:~# kubectl -f pod.yml delete --force --grace-period 0
+Warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "pod" force deleted
+root@cks-master:~# kubectl get pod
+NAME     READY   STATUS    RESTARTS   AGE
+gvisor   1/1     Running   0          76m
+root@cks-master:~# kubectl apply -f pod.yml
+pod/pod created
+
+root@cks-master:~# kubectl exec -it pod -- sh
+~ $
+~ $ id
+uid=1000 gid=3000
+~ $ touch test1
+touch: test1: Permission denied
+~ $ cd /tmp
+/tmp $ touch test1
+/tmp $ ls
+test1
+
+/tmp $ ls -lh test1
+-rw-r--r--    1 1000     3000           0 Sep  3 06:03 test1
