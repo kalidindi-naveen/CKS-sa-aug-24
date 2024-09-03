@@ -1,0 +1,150 @@
+##we will add security contenx as non root user in pod.yml file 
+  vi pod.yml
+  ################
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    securityContext: #add this
+      runAsNonRoot: true #add this
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+#####check the pod is running or not
+  root@cks-master:~# kubectl get pod
+NAME     READY   STATUS    RESTARTS   AGE
+gvisor   1/1     Running   0          90m
+pod      1/1     Running   0          8s
+root@cks-master:~# kubectl describe pod pod
+####it is running
+  we will disable the security context from pod defination
+  ##################
+  vi pod.yml
+  ##################################
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+#  securityContext:
+ #   runAsUser: 1000
+  #  runAsGroup: 3000
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    securityContext:
+      runAsNonRoot: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+########################
+  root@cks-master:~# kubectl apply -f pod.yml
+pod/pod created
+root@cks-master:~# kubectl get pod
+NAME     READY   STATUS                       RESTARTS   AGE
+gvisor   1/1     Running                      0          95m
+pod      0/1     CreateContainerConfigError   0          4s
+#####################
+  kubectl describe pod pod
+  ####
+  Error: container has runAsNonRoot and image will run as root (pod: "pod_default(783b2f3b-cee3-4257-8c5b-3f77e75c8b20)", container:
+##force the container to run as non root user this is called as privilage container
+vi pod.yml
+################
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    securityContext:
+      privileged: true #this container will be created with privilage escalation
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+########################
+                                                                \root@cks-master:~# kubectl -f pod.yml delete --force --grace-period 0
+Warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "pod" force deleted
+root@cks-master:~# kubectl apply -f pod.yml
+pod/pod created
+root@cks-master:~# kubectl exec -it pod -- sh
+/ #
+/ # id
+uid=0(root) gid=0(root) groups=10(wheel)
+##using sysctl command i can change the hostname of the system
+/ # sysctl kernel.hostname=attacker
+kernel.hostname = attacker
+###we need to disable this privilage escalation
+root@cks-master:~#  kubectl -f pod.yml delete --force --grace-period 0
+Warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "pod" force deleted
+#####create a new pod 
+vi pod.yml
+#######
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: true ##this will show no new privalage
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+###################
+kubectl replace -f pod.yml --force
+kubectl exec -it pod -- sh                                                                 
+  cat /proc/1/status
+                                                               
+#############
+allowprivilage easclation will show no new privalge: as tru
+NoNewPrivs:     0
+#################################
+we will enable the privalge mode by making allow privalge escalation as false
+																																
+
