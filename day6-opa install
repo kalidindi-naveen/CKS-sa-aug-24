@@ -51,3 +51,6 @@ spec:
 383  kubectl run pod --image=nginx
   384  kubectl describe K8sAlwaysDeny pod-always-deny
 
+##lets delete the constrain so that we can create teh pod
+kubectl delete  K8sAlwaysDeny pod-always-deny
+383  kubectl run pod --image=nginx
