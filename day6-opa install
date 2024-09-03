@@ -1,0 +1,5 @@
+##we will install opa and integrate the same in kubernetes api yaml file
+  341  kubectl create -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/opa/gatekeeper.yaml
+  342  kubectl get ns
+  343  kubectl -n gatekeeper-system get pod,svc
+  ##lets create the admission controller
