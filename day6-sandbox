@@ -1,0 +1,14 @@
+##delete the previous poid
+258  kubectl delete pod pod
+  ##create a new pod
+  259  kubectl run pod --image=nginx
+  260  kubectl get pod
+  ##login inside the pod 
+  ##this will show the kernal version inside a container
+  261  kubectl exec pod -it -- bash
+  uname -r
+  exit
+  ####from the outside teh container check the kernal version they will match
+  262  uname -r
+  ##strace command will show that kernal is talking to your hardware
+  263  strace uname -r
