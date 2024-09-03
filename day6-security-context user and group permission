@@ -1,0 +1,36 @@
+##lets create a container with shell script
+root@cks-master:~# kubectl run pod --image=busybox --command -o yaml --dry-run=client > pod.yml -- sh -c 'sleep 1d'
+root@cks-master:~# cat pod.yml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+root@cks-master:~# kubectl delete pod pod
+pod "pod" deleted
+root@cks-master:~# kubectl -f pod.yml create
+pod/pod created
+##if you login inside the pod it will have full privale you can see the pod is running as root user
+root@cks-master:~# kubectl exec -it pod -- sh
+/ #
+/ # id
+uid=0(root) gid=0(root) groups=10(wheel)
+/ # touch test
+/ # ls test
+test
+/ # exit
