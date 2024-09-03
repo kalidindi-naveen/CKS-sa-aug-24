@@ -44,7 +44,7 @@ spec:
       - apiGroups: [""]
         kinds: ["Pod"]
   parameters:
-    message: "access denied hola many"]
+    message: "access denied hola many"
 ##finally we need to verify the opa applied or not
   359  kubectl apply -f k8salwaysdeny.yml
 #####try to create a pod and check the logs
