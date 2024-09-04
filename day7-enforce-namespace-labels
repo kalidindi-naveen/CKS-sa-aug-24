@@ -1,0 +1,91 @@
+###lets delete the previous policy
+root@cks-master:~# kubectl delete K8sAlwaysDeny pod-always-deny
+k8salwaysdeny.constraints.gatekeeper.sh "pod-always-deny" deleted
+root@cks-master:~# kubectl delete pod pod
+pod "pod" deleted
+root@cks-master:~#
+##lets create a new templates
+  root@cks-master:~# vi k8srequiredlabels_template.yml
+###############inside the template provide this defination for labels in namespaces
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequiredlabels
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequiredLabels
+      validation:
+        # Schema for the `parameters` field
+        openAPIV3Schema:
+          properties:
+            labels:
+              type: array
+              items: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequiredlabels
+
+        violation[{"msg": msg, "details": {"missing_labels": missing}}] {
+          provided := {label | input.review.object.metadata.labels[label]}
+          required := {label | label := input.parameters.labels[_]}
+          missing := required - provided
+          count(missing) > 0
+          msg := sprintf("you must provide labels: %v", [missing])
+        }
+############################################# in the constrain we will define all the namespace will have an cks as label
+   427  vi all_ns_must_have_cks.yml
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequiredLabels
+metadata:
+  name: ns-must-have-cks
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Namespace"]
+  parameters:
+    labels: ["cks"]
+
+  428  kubectl apply -f all_ns_must_have_cks.yml
+    ##once applied 
+    ####run the describe command 
+     kubectl describe k8srequiredlabels
+##this will show the violation in the defauiolt name space you will seee the violation error
+     Total Violations:  5
+  Violations:
+    Enforcement Action:  deny
+    Kind:                Namespace
+    Message:             you must provide labels: {"cks"}
+    Name:                default
+#######lets rectify the same
+      kubectl edit ns default
+      ################
+      # Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: "2024-09-01T12:37:57Z"
+  labels:
+    kubernetes.io/metadata.name: default
+    
+  name: default
+  resourceVersion: "38"
+  uid: 89baafdb-b475-49ef-8cb8-291fcb97e0d9
+  labels:
+    cks: amazing
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active
+#####################
+   kubectl describe k8srequiredlabels
+##now if you describe the same you will see that the violation from default namespace is gone  
+
+    
