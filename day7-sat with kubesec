@@ -1,0 +1,31 @@
+#####how to use kubesec
+  ##we will create pod and scan your pod yaml file 
+  root@cks-master:~/test# kubectl run nginx --image=nginx -o yaml --dry-run=client > pod.yml
+root@cks-master:~/test# cat pod.yml
+###once we created the pod.yml file which need to be scanner
+  462  kubectl run nginx --image=nginx -o yaml --dry-run=client > pod.yml
+  463  cat pod.yml
+  464  docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < pod.yml
+#####################################################
+    ##this will show all the advices against your yaml file
+    vi pod.yml 
+    ##################################add one of the advice run the pod as non root user
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    resources: {}
+    securityContext:
+      runAsNonRoot: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+####check the advice is fone or not
+    464  docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < pod.yml
