@@ -41,3 +41,25 @@ user: root id: 0
 ##if you see the size of the image it is quite big
 Croot@cks-master:~/test# docker image list | grep app
 app          latest    3bd9796a62a2   2 minutes ago   667MB
+
+###use multi build to build the image when you reduce your image foot print you also need to ensure security
+vi dockerfile
+#########################change the docker file and build again
+FROM ubuntu
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y golang-go
+COPY app.go .
+RUN CGO_ENABLED=0 go build app.go
+
+FROM alpine
+COPY --from=0 /app .
+##########################
+root@cks-master:~/test# docker build -t app .
+##now you will see the image size is reduced
+root@cks-master:~/test# docker image list | grep app
+app          latest    1e06ed73f02e   8 seconds ago    9.81MB
+root@cks-master:~/test# docker run app
+user: root id: 0
+user: root id: 0
+user: root id: 0
+
