@@ -113,4 +113,29 @@ k8srequiredlabels.constraints.gatekeeper.sh/ns-must-have-cks configured
 ###try to create the same namespace
 root@cks-master:~# kubectl create ns test
 Error from server ([ns-must-have-cks] you must provide labels: {"cks", "test"}): admission webhook "validation.gatekeeper.sh" denied the request: [ns-must-have-cks] you must provide labels: {"cks", "test"}
-
+###if we run this command it will show me namespace are created withough a label
+root@cks-master:~# kubectl create ns test -o yaml --dry-run=client
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: test
+spec: {}
+status: {}
+#######################################
+root@cks-master:~# vi ns.yml
+####################
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: null
+  name: test
+  labels:
+    cks: amazing
+    test: app
+spec: {}
+status: {}
+############################
+root@cks-master:~# kubectl -f ns.yml create
+namespace/test created
+##all the namespace created need to have the labels cks
