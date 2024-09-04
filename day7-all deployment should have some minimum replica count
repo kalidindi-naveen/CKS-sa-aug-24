@@ -1,0 +1,60 @@
+###lets first delet the policy
+root@cks-master:~# kubectl delete K8sRequiredLabels  ns-must-have-cks
+k8srequiredlabels.constraints.gatekeeper.sh "ns-must-have-cks" deleted
+root@cks-master:~#
+###create a constrain template for min replica count
+  vi k8sminreplicacounttemplate.yml
+  ###########################################
+  apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sminreplicacount
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sMinReplicaCount
+      validation:
+        # Schema for the `parameters` field
+        openAPIV3Schema:
+          properties:
+            min:
+              type: integer
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sminreplicacount
+
+        violation[{"msg": msg, "details": {"missing_replicas": missing}}] {
+          provided := input.review.object.spec.replicas
+          required := input.parameters.min
+          missing := required - provided
+          missing > 0
+          msg := sprintf("you must provide %v more replicas", [missing])
+        }
+########create the constrain
+  vi replicaconstrina.yml
+  ###########################
+  apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sMinReplicaCount
+metadata:
+  name: deployment-must-have-min-replicas
+spec:
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment"]
+  parameters:
+    min: 2
+      #####
+      describe the constrain
+      ########################
+      kubectl describe K8sMinReplicaCount deployment-must-have-min-replicas
+      ##lets do a dry run 
+      kubectl create deploy test --image=nginx
+      ###see the violation error
+      ##########################
+      kubectl create deploy test --image=nginx -o yaml --dry-run=client > deploy.yml
+      ##change the replica count to min 2
+      ##apply it will be created
+      
