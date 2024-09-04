@@ -38,3 +38,6 @@ func main () {
   root@cks-master:~/test# docker run app
 user: root id: 0
 ###you can see thee application is running as root user
+##if you see the size of the image it is quite big
+Croot@cks-master:~/test# docker image list | grep app
+app          latest    3bd9796a62a2   2 minutes ago   667MB
