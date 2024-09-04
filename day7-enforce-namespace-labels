@@ -88,4 +88,29 @@ status:
    kubectl describe k8srequiredlabels
 ##now if you describe the same you will see that the violation from default namespace is gone  
 
-    
+if you try to create a ns withoguth label it will not work
+root@cks-master:~# kubectl create ns test
+Error from server ([ns-must-have-cks] you must provide labels: {"cks"}): admission webhook "validation.gatekeeper.sh" den
+######
+add another label in the namespace
+root@cks-master:~# vi all_ns_must_have_cks.yml
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequiredLabels
+metadata:
+  name: ns-must-have-cks
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Namespace"]
+  parameters:
+    labels: ["cks","test"]
+#####
+now check the violation
+#################################### first apply the constrain
+root@cks-master:~# kubectl apply -f all_ns_must_have_cks.yml
+k8srequiredlabels.constraints.gatekeeper.sh/ns-must-have-cks configured
+###try to create the same namespace
+root@cks-master:~# kubectl create ns test
+Error from server ([ns-must-have-cks] you must provide labels: {"cks", "test"}): admission webhook "validation.gatekeeper.sh" denied the request: [ns-must-have-cks] you must provide labels: {"cks", "test"}
+
