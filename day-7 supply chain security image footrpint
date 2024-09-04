@@ -63,3 +63,114 @@ user: root id: 0
 user: root id: 0
 user: root id: 0
 
+##lets run the contianer using a user
+root@cks-master:~/test# vi dockerfile
+FROM ubuntu
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y golang-go
+COPY app.go .
+RUN CGO_ENABLED=0 go build app.go
+
+FROM alpine
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup -h /home/appuser
+COPY --from=0 /app /home/appuser/
+USER appuser
+CMD ["/home/appuser/app"]
+####lets buiold the image again
+root@cks-master:~/test# docker build -t app .
+###now run the container you will see it is running as non root user
+root@cks-master:~/test# docker run app
+user: appuser id: 100
+user: appuser id: 100
+##################################
+Make all the filesystem inside my container to be run as read only in a particular directory
+root@cks-master:~/test# vi dockerfile
+#######inside the same we will add the run command
+FROM ubuntu
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y golang-go
+COPY app.go .
+RUN CGO_ENABLED=0 go build app.go
+
+FROM alpine
+RUN chmod a-w /etc
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup -h /home/appuser
+COPY --from=0 /app /home/appuser/
+USER appuser
+CMD ["/home/appuser/app"]
+#####lets build agains
+root@cks-master:~/test# docker build -t app .
+##lets run a container as deamon mode
+root@cks-master:~/test# docker run -d app
+b2b3fefccbb4bf23bed6ef95bed857c7a74d2524da0b47b3d9891a72fd4e4030
+root@cks-master:~/test# docker ps
+CONTAINER ID   IMAGE     COMMAND               CREATED         STATUS         PORTS     NAMES
+b2b3fefccbb4   app       "/home/appuser/app"   3 seconds ago   Up 2 seconds             frosty_black
+###we will login inside the container
+root@cks-master:~/test# docker exec -it b2b sh
+
+/ $ ls -la
+total 68
+drwxr-xr-x    1 root     root          4096 Sep  4 06:58 .
+drwxr-xr-x    1 root     root          4096 Sep  4 06:58 ..
+-rwxr-xr-x    1 root     root             0 Sep  4 06:58 .dockerenv
+drwxr-xr-x    2 root     root          4096 Jul 22 14:34 bin
+drwxr-xr-x    5 root     root           340 Sep  4 06:58 dev
+dr-xr-xr-x    1 root     root          4096 Sep  4 06:58 etc ##compare the etc directory permission
+##compare teh etc directory permission
+##finally lets remove the shell access
+root@cks-master:~/test# vi dockerfile
+FROM ubuntu
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y golang-go
+COPY app.go .
+RUN CGO_ENABLED=0 go build app.go
+
+FROM alpine
+RUN chmod a-w /etc
+RUN rm -rf /bin/*
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup -h /home/appuser
+COPY --from=0 /app /home/appuser/
+USER appuser
+CMD ["/home/appuser/app"]
+##lets rebuild the container
+root@cks-master:~/test# docker build -t app .
+
+###it will not work
+Step 9/12 : RUN addgroup -S appgroup && adduser -S appuser -G appgroup -h /home/appuser
+ ---> Running in 436feaa64d37
+failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: exec: "/bin/sh": stat /bin/sh: no such file or directory: unknown
+##to make it work
+###
+vi dockerfile
+########################################### sh you neewd to puit it at the end
+FROM ubuntu
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y golang-go
+COPY app.go .
+RUN CGO_ENABLED=0 go build app.go
+
+FROM alpine
+RUN chmod a-w /etc
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup -h /home/appuser
+RUN rm -rf /bin/*
+COPY --from=0 /app /home/appuser/
+USER appuser
+CMD ["/home/appuser/app"]
+#####
+root@cks-master:~/test# docker build -t app .
+
+root@cks-master:~/test# docker run -d app
+160c0d4fb5b0c6c67027d39752cb254ca4c101b63f31792867d677e86f580fea
+root@cks-master:~/test# docker ps
+CONTAINER ID   IMAGE          COMMAND               CREATED         STATUS         PORTS     NAMES
+160c0d4fb5b0   app            "/home/appuser/app"   2 seconds ago   Up 1 second              brave_wright
+b2b3fefccbb4   9e033fbe487e   "/home/appuser/app"   7 minutes ago   Up 7 minutes             frosty_black
+###check the latest container and try to login 
+root@cks-master:~/test# docker exec -it 160 sh
+OCI runtime exec failed: exec failed: unable to start container process: exec: "sh": executable file not found in $PATH: unknown
+root@cks-master:~/test#
+
+
+
+
