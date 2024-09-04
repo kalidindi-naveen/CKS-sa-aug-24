@@ -1,0 +1,40 @@
+###you have an dockerfile and an application file
+  mkdir test
+  cd test
+  vi dockerfile
+  ##########
+FROM ubuntu
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y golang-go
+COPY app.go .
+RUN CGO_ENABLED=0 go build app.go
+CMD ["./app"]
+#####add the app.go app
+vi app.go
+##############################
+package main
+
+import (
+    "fmt"
+    "time"
+    "os/user"
+)
+
+func main () {
+    user, err := user.Current()
+    if err != nil {
+        panic(err)
+    }
+
+    for {
+        fmt.Println("user: " + user.Username + " id: " + user.Uid)
+        time.Sleep(1 * time.Second)
+    }
+}
+
+###build it 
+ 462  docker build -t app .
+####once build run the application
+  root@cks-master:~/test# docker run app
+user: root id: 0
+###you can see thee application is running as root user
