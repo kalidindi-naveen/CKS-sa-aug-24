@@ -29,3 +29,18 @@ spec:
 status: {}
 ####check the advice is fone or not
     464  docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < pod.yml
+
+##you can put the same rego policy in opa
+package main
+
+deny[msg] {
+	input.kind = "Deployment"
+
+	# The `some` keyword declares local variables. This rule declares a variable
+	# called `container`, with the value any of the input request's spec's container
+	# objects. It then checks if the container object's `"image"` field does not
+	# start with "hooli.com/".
+	not input.spec.template.spec.securityContext.runAsNonRoot = true
+	msg := sprintf("container must not run as root user")
+}
+
