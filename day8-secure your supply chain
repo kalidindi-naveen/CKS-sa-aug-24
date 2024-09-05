@@ -1,0 +1,31 @@
+####check the images and from where they are coming
+   529  kubectl get pod -A -o yaml | grep "image:"
+  530  kubectl get pod -A -o yaml | grep "image:" | grep -v "f:"
+  531  kubectl -n kube-system get pod -A
+  ##this will give you the version of the kubeapi-server images
+  532  kubectl -n kube-system get pod kube-apiserver-cks-master  -o yaml
+################you can verify the same inside the kube-apiserver yaml file
+   534  cat /etc/kubernetes/manifests/kube-apiserver.yaml
+
+    image: registry.k8s.io/kube-apiserver:v1.30.3
+####this is the version of the image which is running in your cluster for api server lets change the image id with an sha value of the image and see that the api server come back or not
+       532  kubectl -n kube-system get pod kube-apiserver-cks-master  -o yaml
+      ##this will give you image sha value
+       containerStatuses:
+  - containerID: containerd://cc57bb9aa3dd22a4986e91a44140890e80c66fb694d197acb7a4ae02b243d96c
+    image: registry.k8s.io/kube-apiserver:v1.30.3
+    imageID: registry.k8s.io/kube-apiserver@sha256:a36d558835e48950f6d13b1edbe20605b8dfbc81e088f58221796631e107966c
+##from the above output copy the image id and change teh same in the image 
+      vi /etc/kubernetes/manifests/kube-apiserver.yaml
+       image: registry.k8s.io/kube-apiserver:v1.30.3
+    imagePullPolicy: IfNotPresent
+      ############################################### changes need to be done in place of image id put the sha value of the image
+      
+ vi /etc/kubernetes/manifests/kube-apiserver.yaml
+       image: registry.k8s.io/kube-apiserver@sha256:a36d558835e48950f6d13b1edbe20605b8dfbc81e088f58221796631e107966c
+         ######this way no one will know which version of the image we are running wait for few minutes till the kube-api server comes back
+         root@cks-master:~# kubectl -n kube-system get pod | grep kube-api
+kube-apiserver-cks-master                  0/1     Pending   0              7s
+crictl ps
+         #
+      
