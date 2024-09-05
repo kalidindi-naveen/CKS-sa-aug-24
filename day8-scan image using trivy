@@ -1,0 +1,12 @@
+##first we will download the container image for trivy
+    506  docker run ghcr.io/aquasecurity/trivy:latest
+###once we install trivy i want to scan some images. 
+   509  docker run ghcr.io/aquasecurity/trivy:latest image nginx
+  509  docker run ghcr.io/aquasecurity/trivy:latest image nginx | grep CRITICAL
+  510  docker run ghcr.io/aquasecurity/trivy:latest image nginx:1.16-alpine | grep CRITICAL
+#########lets scan an k8s image
+     511  kubectl -n kube-system get pod | grep api
+  512  kubectl -n kube-system get pod kube-apiserver-cks-master -o yaml | grep image
+  513  docker run ghcr.io/aquasecurity/trivy:latest image registry.k8s.io/kube-apiserver:v1.30.3
+#####check the cvv scoring for the latest image
+     518  docker run ghcr.io/aquasecurity/trivy:latest image registry.k8s.io/kube-apiserver:v1.31.0
