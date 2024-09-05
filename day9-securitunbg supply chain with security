@@ -1,0 +1,52 @@
+?#####lets create an constrain template with rego
+  root@cks-master:~# vi k8strustedimage_template.yml
+##############################
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8strustedimages
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sTrustedImages
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8strustedimages
+
+        violation[{"msg": msg}] {
+          image := input.review.object.spec.containers[_].image
+          not startswith(image, "docker.io/")
+          not startswith(image, "k8s.gcr.io/")
+          msg := "not trusted image!"
+        }
+###lets apply the template
+  root@cks-master:~# kubectl apply -f k8strustedimage_template.yml
+constrainttemplate.templates.gatekeeper.sh/k8strustedimages created
+###lets create the constrain
+    root@cks-master:~# vi k8strustedimage.yml
+############################
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sTrustedImages
+metadata:
+  name: pod-trusted-image
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+
+root@cks-master:~# kubectl apply -f k8strustedimage.yml
+k8strustedimages.constraints.gatekeeper.sh/pod-trusted-image created
+##les test the policy
+    570  kubectl get constrainttemplates
+  571  kubectl get k8strustedimages
+  572  kubectl describe k8strustedimages pod-trusted-image
+  ##this will not work 
+  573  kubectl run nginx --image=nginx
+  $$this will work as we are giving the exeption
+  574  kubectl run nginx --image=docker.io/nginx
+###############lets delete teh policy which we create
+
+  572  kubectl delete k8strustedimages pod-trusted-image
