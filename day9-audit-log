@@ -10,4 +10,29 @@ kind: Policy
 rules:
   - level: Metadata
 
+##i have added the audit policy need to integrated inside kube-api yaml file
+root@cks-master:/etc/kubernetes# vi /etc/kubernetes/manifests/kube-apiserver.yaml
+###################################
+##below the contianer defination
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    - --audit-policy-file=/etc/kubernetes/audit/policy.yaml ##this is the path of your policy
+    - --audit-log-path=/etc/kubernetes/audit/logs/audit.log #log path
+    - --audit-log-maxbackup=5 #number of logs
+    - --audit-log-maxsize=500 #size of the logs
+###################################################
+lets add the volume in the volume block
+ volumes:
+   - hostPath:
+      path: /etc/kubernetes/audit
+      type: DirectoryOrCreate
+    name: audit
   
+##lets add the mount path in the container block
+- mountPath: /etc/kubernetes/audit
+    name: audit
+############once completed we need to apply the same
+
+
