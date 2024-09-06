@@ -67,3 +67,35 @@ profile k8s-apparmor-example-deny-write flags=(attach_disconnected) {
 ###describe command will show that the pod cannot write so it is failing
   856  kubectl describe pod secure
 
+###we will create a new pod which will come up withought making change in the node machine
+vi pod2.yml
+##################
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello-apparmor
+spec:
+  securityContext:
+    appArmorProfile:
+      type: Localhost
+      localhostProfile: k8s-apparmor-example-deny-write
+  containers:
+  - name: hello
+    image: busybox:1.28
+    command: [ "sh", "-c", "echo 'Hello AppArmor!' && sleep 1h" ]
+####
+kubectl get pod 
+root@cks-master:~# kubectl apply -f pod2.yml
+pod/hello-apparmor created
+root@cks-master:~# kubectl get pod
+NAME             READY   STATUS             RESTARTS      AGE
+apache           1/1     Running            0             107m
+hello-apparmor   1/1     Running            0             3s
+secure           0/1     CrashLoopBackOff   5 (85s ago)   4m24s
+root@cks-master:~# kubectl exec hello-apparmor -- cat /proc/1/attr/current
+k8s-apparmor-example-deny-write (enforce)
+root@cks-master:~# kubectl exec hello-apparmor -- touch /tmp/test
+touch: /tmp/test: Permission denied
+command terminated with exit code 1
+root@cks-master:~#
+
