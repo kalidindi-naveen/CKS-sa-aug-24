@@ -35,5 +35,7 @@ lets add the volume in the volume block
   name: audit
 
 ############once completed we need to apply the same
-
-
+##to check the logs 
+go to the directory 
+cd /etc/kubernetes/audit
+ls
