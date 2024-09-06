@@ -43,3 +43,27 @@ status: {}
   848  kubectl describe pod secure
 ##this will show that the profile do not exist
 
+##this activity need to be done on the worker node where the worked is there
+cd /etc/apparmor.d/
+##go inside the directory create a file and add a policy
+ 122  vi k8s-apparmor-example-deny-write
+#####################
+#include <tunables/global>
+
+profile k8s-apparmor-example-deny-write flags=(attach_disconnected) {
+  #include <abstractions/base>
+
+  file,
+
+  # Deny all file writes.
+  deny /** w,
+}
+####once i add the policy i need to load it inside app armour
+ 124  apparmor_parser /etc/apparmor.d/k8s-apparmor-example-deny-write
+#####below command will show that the policy is being loaded or not
+  125  aa-status
+#############do this in master machine
+ 855  kubectl get pod
+###describe command will show that the pod cannot write so it is failing
+  856  kubectl describe pod secure
+
