@@ -1,0 +1,67 @@
+##do this activity in the worker node
+   140  cd /var/lib/kubelet/
+   142  mkdir seccomp
+ 144  vi default.json
+###inside this just pout the default policy
+  {
+    "defaultAction": "SCMP_ACT_LOG"
+}
+##do this activity in the master node
+##this policy need to be put inside kubelete on worker node. 
+  ##lets create a pod with seccomp policy
+   865  kubectl run securesc --image=nginx -o yaml --dry-run=client > pod.yml
+  ##in the pod defination we are going to add the seccom profile
+  868  vi pod.yml
+  #########
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: securesc
+  name: securesc
+spec:
+  securityContext:
+    seccompProfile:
+      type: Localhost
+      localhostProfile: profile/audit.json
+  containers:
+  - image: nginx
+    name: securesc
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+  869  kubectl apply -f pod.yml
+  870  kubectl get pod
+  871  kubectl describe pod securesc
+    ####check the error and path where the file is located 
+      Warning  Failed     45s (x8 over 112s)  kubelet            Error: failed to create containerd container: cannot load seccomp profile "/var/lib/kubelet/seccomp/profile/audit.json": open /var/lib/kubelet/seccomp/profile/audit.json: no such file or directory
+    ###modify the pod with secom profie
+    vi pod.yml
+    ############################
+    apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: securesc
+  name: securesc
+spec:
+  securityContext:
+    seccompProfile:
+      type: Localhost
+      localhostProfile: default.json
+  containers:
+  - image: nginx
+    name: securesc
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+####apply it you can see the secoom is applying
+    875  vi pod.yml
+  876  kubectl -f pod.yml replace --force
+  877  kubectl get pod
+  878  kubectl describe pod securesc
