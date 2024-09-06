@@ -1,0 +1,16 @@
+ 105  aa-status
+  106  apt-get install apparmor-utils
+  107  aa-
+  108  aa-status
+   110  curl  killer.sh -v
+   ##this will create a profile and apply the enforce rule 
+  109  aa-genprof curl
+  110  curl  killer.sh -v
+   ##if you want to check the profile
+  111  aa-status
+  ##the profile information is stored in the particular directory with file name
+  115  cd apparmor.d/
+  116  ls
+  117  vi usr.bin.curl
+  118  aa-logprof
+  119  vi usr.bin.curl
