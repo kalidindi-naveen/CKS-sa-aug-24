@@ -39,3 +39,12 @@ lets add the volume in the volume block
 go to the directory 
 cd /etc/kubernetes/audit
 ls
+##3lets create a secret and check the audit log for the same
+root@cks-master:/etc/kubernetes/manifests# kubectl create secret generic log-secret --from-literal=user=admin
+secret/log-secret created
+root@cks-master:/etc/kubernetes/manifests# cd ..
+root@cks-master:/etc/kubernetes# cd audit/
+root@cks-master:/etc/kubernetes/audit# ls
+audit.log  policy.yaml
+root@cks-master:/etc/kubernetes/audit# cat audit.log | grep log-secret
+{"kind":"Event","apiVersion":"audit.k8s.io/v1","level":"Metadata","auditID":"6739b7c4-1727-4c08-9fa7-584bc785c439","stage":"ResponseComplete","requestURI":"/api/v1/namespaces/default/secrets?fieldManager=kubectl-create\u0026fieldValidation=Strict","verb":"create","user":{"username":"kubernetes-admin","groups":["kubeadm:cluster-admins","system:authenticated"]},"sourceIPs":["10.0.0.5"],"userAgent":"kubectl/v1.30.3 (linux/amd64) kubernetes/6fc0a69","objectRef":{"resource":"secrets","namespace":"default","name":"log-secret","apiVersion":"v1"},"responseStatus":{"metadata":{},"code":201},"requestReceivedTimestamp":"2024-09-06T05:44:59.005084Z","stageTimestamp":"2024-09-06T05:44:59.013558Z","annotations":{"authorization.k8s.io/decision":"allow","authorization.k8s.io/reason":"RBAC: allowed by ClusterRoleBinding \"kubeadm:cluster-admins\" of ClusterRole \"cluster-admin\" to Group \"kubeadm:cluster-admins\""}}
