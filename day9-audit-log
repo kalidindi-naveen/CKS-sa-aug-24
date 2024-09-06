@@ -1,0 +1,13 @@
+##lets add the audit logs
+   646  cd /etc/kubernetes/
+  647  ls
+  648  mkdir audit
+  649  cd audit/
+  650  vi policy.yml
+##lets add an audit policy called as metadta 
+apiVersion: audit.k8s.io/v1 # This is required.
+kind: Policy
+rules:
+  - level: Metadata
+
+  
