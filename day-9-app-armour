@@ -14,3 +14,32 @@
   117  vi usr.bin.curl
   118  aa-logprof
   119  vi usr.bin.curl
+
+###lets create a pod and add the app armour profile
+ 839  kubectl run secure --image=nginx -o yaml --dry-run=client > pod.yml
+###add the security context block in the app armour profile
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: secure
+  name: secure
+spec:
+  securityContext:
+    appArmorProfile:
+      type: Localhost
+      localhostProfile: k8s-apparmor-example-deny-write
+  containers:
+  - image: nginx
+    name: secure
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+##apply the container
+  841  kubectl -f pod.yml create
+##once applied describe it see the profile exist or not
+  848  kubectl describe pod secure
+##this will show that the profile do not exist
+
