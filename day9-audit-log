@@ -32,7 +32,8 @@ lets add the volume in the volume block
   
 ##lets add the mount path in the container block
 - mountPath: /etc/kubernetes/audit
-    name: audit
+  name: audit
+
 ############once completed we need to apply the same
 
 
